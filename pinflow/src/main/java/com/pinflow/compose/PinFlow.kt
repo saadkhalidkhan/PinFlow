@@ -14,11 +14,16 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -52,6 +57,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -100,6 +106,23 @@ fun PinFlow(
         color = Color.Transparent,
         fontSize = 1.sp,
     )
+
+    val layoutDimensions = remember(dimensions, length) {
+        when {
+            length >= 6 -> dimensions.copy(
+                cellWidth = minOf(dimensions.cellWidth, 44.dp),
+                spacing = minOf(dimensions.spacing, 10.dp),
+            )
+            else -> dimensions
+        }
+    }
+
+    val isSingleField = slotMode == PinFlowMode.SingleField
+    val fieldWidthModifier = if (isSingleField) {
+        Modifier.fillMaxWidth()
+    } else {
+        Modifier.wrapContentWidth()
+    }
 
     LaunchedEffect(value, length) {
         if (PinFlowValidator.isComplete(value, length)) {
@@ -171,12 +194,13 @@ fun PinFlow(
                 revealedIndex = revealedIndex,
                 maskChar = maskChar,
                 colors = colors,
-                dimensions = dimensions,
+                dimensions = layoutDimensions,
                 animations = animations,
             )
         } else {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(dimensions.spacing),
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(layoutDimensions.spacing),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 repeat(length) { index ->
@@ -198,7 +222,7 @@ fun PinFlow(
                         mode = slotMode,
                         maskChar = maskChar,
                         colors = colors,
-                        dimensions = dimensions,
+                        dimensions = layoutDimensions,
                         animations = animations,
                     )
                 }
@@ -207,7 +231,7 @@ fun PinFlow(
     }
 
     Box(
-        modifier = containerModifier,
+        modifier = containerModifier.then(fieldWidthModifier),
         contentAlignment = Alignment.Center,
     ) {
         if (enabled && isLayoutReady) {
@@ -221,8 +245,7 @@ fun PinFlow(
                     }
                     onValueChange(filtered.take(length))
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = fieldWidthModifier
                     .focusRequester(focusRequester)
                     .onFocusChanged { isFocused = it.isFocused },
                 textStyle = hiddenFieldTextStyle,
@@ -443,8 +466,12 @@ private fun PinFlowCell(
 
     Box(
         modifier = Modifier
-            .width(dimensions.cellWidth)
+            .widthIn(min = dimensions.cellWidth, max = dimensions.cellWidth)
             .height(dimensions.cellHeight)
+            .defaultMinSize(
+                minWidth = dimensions.cellWidth,
+                minHeight = dimensions.cellHeight,
+            )
             .graphicsLayer {
                 translationY = if (PinFlowAnimation.Slide in animations) slideOffset.value else 0f
             }
@@ -484,8 +511,11 @@ private fun PinFlowCell(
 
         Text(
             text = text,
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = textColor,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Visible,
         )
     }
 }

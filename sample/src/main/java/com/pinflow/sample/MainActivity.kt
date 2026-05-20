@@ -139,6 +139,8 @@ fun DemoScreen(modifier: Modifier = Modifier) {
                 text = "Value: $pin",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
             )
         }
 
@@ -166,6 +168,8 @@ fun DemoScreen(modifier: Modifier = Modifier) {
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
                 )
             }
         }
@@ -298,9 +302,12 @@ fun DemoSection(
                 lineHeight = 18.sp,
             )
 
-            Box(
-                modifier = Modifier.padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center,
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 content()
             }
