@@ -13,10 +13,8 @@
 **PinFlow** is a lightweight, animated, and customizable **OTP / PIN input** library for Jetpack Compose. Built with Material 3, smart paste handling, secure PIN mode, and smooth interaction states — add polished verification flows in minutes.
 
 <p align="center">
-  <img src="docs/images/hero.svg" alt="PinFlow demo — replace with hero.gif" width="720"/>
+  <img src="docs/images/hero.gif" alt="PinFlow sample app demo" width="400"/>
 </p>
-
-> **Tip:** Record a short GIF from the `:sample` app and save it as `docs/images/hero.gif` for maximum impact. See [docs/images/ADD_MEDIA.md](docs/images/ADD_MEDIA.md).
 
 ---
 
@@ -36,9 +34,9 @@
 
 ## Preview
 
-| Boxes + paste | Secure PIN | Success + slide |
+| Boxes + smart paste | Underline + shake | Alphanumeric (6) |
 |:---:|:---:|:---:|
-| ![Boxes](docs/images/preview-boxes.svg) | ![Secure](docs/images/preview-secure.svg) | ![Success](docs/images/preview-success.svg) |
+| ![Boxes + paste](docs/images/preview1.png) | ![Underline](docs/images/preview2.png) | ![Alphanumeric](docs/images/preview3.png) |
 
 ---
 
