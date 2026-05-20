@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120" role="img" aria-label="Secure PIN placeholder">
+  <rect width="400" height="120" rx="16" fill="#F3EDF7"/>
+  <text x="200" y="36" fill="#49454F" font-family="system-ui,sans-serif" font-size="14" text-anchor="middle">Secure PIN · Reveal last digit</text>
+  <g transform="translate(72 52)">
+    <circle cx="24" cy="28" r="24" fill="#E8DEF8" stroke="#6750A4"/>
+    <circle cx="84" cy="28" r="24" fill="#E8DEF8" stroke="#CAC4D0"/>
+    <circle cx="144" cy="28" r="24" fill="#E8DEF8" stroke="#CAC4D0"/>
+    <circle cx="204" cy="28" r="24" fill="#E8DEF8" stroke="#CAC4D0"/>
+    <text x="12" y="34" fill="#1C1B1F" font-size="20">Ï</text>
+    <text x="72" y="34" fill="#1C1B1F" font-size="20">Ï</text>
+    <text x="138" y="34" fill="#1C1B1F" font-size="20">7</text>
+  </g>
+</svg>

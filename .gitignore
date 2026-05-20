@@ -1,15 +1,62 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Android Studio / IntelliJ
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.idea/
+!.idea/codeStyles/
+!.idea/icon.svg
+!.idea/inspectionProfiles/
+!.idea/runConfigurations.xml
+!.idea/markdown.xml
+!.idea/vcs.xml
+!.idea/compiler.xml
+!.idea/gradle.xml
+!.idea/misc.xml
+!.idea/AndroidProjectSystem.xml
+!.idea/deploymentTargetSelector.xml
+!.idea/appInsightsSettings.xml
+out/
+
+# Gradle
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
 local.properties
+*.keystore
+*.jks
+signing.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kotlin / Java
+*.class
+*.log
+*.hprof
+
+# NDK / native
+.externalNativeBuild/
+.cxx/
+captures/
+
+# Agent / local tooling
+.agent/
+
+# Publishing secrets (never commit)
+central.properties
+release.properties
+
+# Dokka / docs output (generated locally; CI deploys from build/)
+/docs/api/
+
+# Misc
+*.swp
+*.swo
+*~

@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a problem with PinFlow
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug and expected behavior.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: PinFlow version
+      placeholder: "1.0.0 or commit SHA"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: Minimal Compose snippet or sample steps
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "Android 14, Compose BOM 2024.09, Kotlin 2.2"
+    validations:
+      required: true

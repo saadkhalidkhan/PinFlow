@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120" role="img" aria-label="Box mode placeholder">
+  <rect width="400" height="120" rx="16" fill="#F3EDF7"/>
+  <text x="200" y="36" fill="#49454F" font-family="system-ui,sans-serif" font-size="14" text-anchor="middle">Boxes · Smart paste</text>
+  <g transform="translate(72 52)">
+    <rect width="48" height="56" rx="10" fill="#E8DEF8" stroke="#6750A4" stroke-width="2"/>
+    <rect x="60" width="48" height="56" rx="10" fill="#E8DEF8" stroke="#CAC4D0"/>
+    <rect x="120" width="48" height="56" rx="10" fill="#E8DEF8" stroke="#CAC4D0"/>
+    <rect x="180" width="48" height="56" rx="10" fill="#E8DEF8" stroke="#CAC4D0"/>
+  </g>
+</svg>
