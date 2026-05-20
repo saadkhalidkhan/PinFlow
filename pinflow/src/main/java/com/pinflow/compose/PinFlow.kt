@@ -14,10 +14,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,9 +33,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -43,10 +43,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,7 +80,7 @@ fun PinFlow(
     isError: Boolean = false,
     isSuccess: Boolean = false,
     enabled: Boolean = true,
-    maskChar: String = "●",
+    maskChar: String = "\u2022",
     onComplete: ((String) -> Unit)? = null,
 ) {
     val resolvedSecure = secure || mode == PinFlowMode.SecurePin
@@ -88,8 +92,14 @@ fun PinFlow(
 
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }
+    var isLayoutReady by remember { mutableStateOf(false) }
+    var pendingFocus by remember { mutableStateOf(false) }
     var revealedIndex by remember { mutableIntStateOf(-1) }
     val shakeOffset = remember { Animatable(0f) }
+    val hiddenFieldTextStyle = TextStyle(
+        color = Color.Transparent,
+        fontSize = 1.sp,
+    )
 
     LaunchedEffect(value, length) {
         if (PinFlowValidator.isComplete(value, length)) {
@@ -104,6 +114,14 @@ fun PinFlow(
             revealedIndex = -1
         } else {
             revealedIndex = -1
+        }
+    }
+
+    LaunchedEffect(isLayoutReady, pendingFocus) {
+        if (isLayoutReady && pendingFocus && enabled) {
+            withFrameMillis { }
+            focusRequester.requestFocus()
+            pendingFocus = false
         }
     }
 
@@ -130,45 +148,18 @@ fun PinFlow(
     }
 
     val containerModifier = modifier
-        .then(
-            if (enabled) {
-                Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                ) { focusRequester.requestFocus() }
-            } else Modifier
-        )
+        .onGloballyPositioned { coordinates ->
+            if (coordinates.size.width > 0 && coordinates.size.height > 0) {
+                isLayoutReady = true
+            }
+        }
         .semantics {
             contentDescription = "PIN input, $length characters"
         }
         .graphicsLayer { translationX = shakeOffset.value }
 
-    Box(
-        modifier = containerModifier,
-        contentAlignment = Alignment.Center,
-    ) {
-        if (enabled) {
-            BasicTextField(
-                value = value,
-                onValueChange = { input ->
-                    val filtered = if (isAlphanumeric) {
-                        input.filter { it.isLetterOrDigit() }
-                    } else {
-                        input.filter { it.isDigit() }
-                    }
-                    onValueChange(filtered.take(length))
-                },
-                modifier = Modifier
-                    .size(0.dp)
-                    .alpha(0f)
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { isFocused = it.isFocused },
-                keyboardOptions = keyboardOptions,
-                keyboardActions = keyboardActions,
-                decorationBox = { inner -> inner() },
-            )
-        }
-
+    @Composable
+    fun PinFlowVisuals() {
         if (slotMode == PinFlowMode.SingleField) {
             SingleFieldDisplay(
                 value = value,
@@ -209,6 +200,66 @@ fun PinFlow(
                         colors = colors,
                         dimensions = dimensions,
                         animations = animations,
+                    )
+                }
+            }
+        }
+    }
+
+    Box(
+        modifier = containerModifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        if (enabled && isLayoutReady) {
+            BasicTextField(
+                value = value,
+                onValueChange = { input ->
+                    val filtered = if (isAlphanumeric) {
+                        input.filter { it.isLetterOrDigit() }
+                    } else {
+                        input.filter { it.isDigit() }
+                    }
+                    onValueChange(filtered.take(length))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { isFocused = it.isFocused },
+                textStyle = hiddenFieldTextStyle,
+                cursorBrush = SolidColor(Color.Transparent),
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+                decorationBox = { innerTextField ->
+                    Box(contentAlignment = Alignment.Center) {
+                        PinFlowVisuals()
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .then(
+                                    if (slotMode == PinFlowMode.SingleField) {
+                                        Modifier.fillMaxWidth()
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            innerTextField()
+                        }
+                    }
+                },
+            )
+        } else {
+            Box(contentAlignment = Alignment.Center) {
+                PinFlowVisuals()
+                if (enabled) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) { pendingFocus = true },
                     )
                 }
             }
@@ -280,7 +331,7 @@ private fun SingleFieldDisplay(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (value.isEmpty() && isFocused) "Enter code" else display.padEnd(length, ' '),
+            text = if (value.isEmpty() && isFocused) "Enter code" else display,
             style = MaterialTheme.typography.headlineSmall,
             letterSpacing = 6.sp,
             textAlign = TextAlign.Center,
