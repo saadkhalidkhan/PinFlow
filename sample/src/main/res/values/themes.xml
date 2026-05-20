@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.PinFlow" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

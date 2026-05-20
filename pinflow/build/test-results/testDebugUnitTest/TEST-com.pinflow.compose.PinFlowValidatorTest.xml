@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.pinflow.compose.PinFlowValidatorTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-05-18T15:33:02.387Z" hostname="DESKTOP-SM4P355" time="0.038">
+  <properties/>
+  <testcase name="hasRepeatedDigits_detectsAllSame" classname="com.pinflow.compose.PinFlowValidatorTest" time="0.028"/>
+  <testcase name="isNumeric_acceptsDigitsOnly" classname="com.pinflow.compose.PinFlowValidatorTest" time="0.001"/>
+  <testcase name="isComplete_whenLengthMatches_returnsTrue" classname="com.pinflow.compose.PinFlowValidatorTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
