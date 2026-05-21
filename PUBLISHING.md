@@ -187,13 +187,14 @@ You can also run it manually: **Actions → Release → Run workflow** (if enabl
 
 Requires **Dokka 2.2.0+** (AGP 9 compatibility) — already configured in this repo.
 
-1. **Settings → Pages → Build and deployment → Source:** **GitHub Actions**  
-   (The Docs workflow also sets `enablement: true` to request Pages automatically.)
-2. Push to `master` — **Docs** workflow runs `:pinflow:dokkaGeneratePublicationHtml` and deploys.
+**One-time manual setup (required):** [.github/SETUP_PAGES.md](.github/SETUP_PAGES.md)
+
+1. **Settings → Pages → Source:** **GitHub Actions** (must be done by a repo admin).
+2. Push to `master` or run **Actions → Docs**.
 
 Public URL: **https://saadkhalidkhan.github.io/PinFlow/**
 
-If you see `Get Pages site failed` / `Not Found`, enable Pages manually in repo **Settings → Pages** (needs admin access).
+If you see `Resource not accessible by integration`, enable Pages manually — the workflow cannot create the site for you.
 
 ### Other workflows
 

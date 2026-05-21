@@ -244,6 +244,7 @@ The sample demonstrates all modes, secure PIN, success/slide, single-field, and 
 | [PUBLISHING.md](PUBLISHING.md) | Maven Central + JitPack install & troubleshooting |
 | [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) | Step-by-step for each new version |
 | [.github/SETUP_SECRETS.md](.github/SETUP_SECRETS.md) | Optional GitHub Actions secrets for CI publish |
+| [.github/SETUP_PAGES.md](.github/SETUP_PAGES.md) | One-time GitHub Pages enablement for API docs |
 | [gradle.properties.example](gradle.properties.example) | Local credentials template (do not commit secrets) |
 
 ---
