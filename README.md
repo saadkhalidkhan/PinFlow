@@ -47,6 +47,7 @@
 ```kotlin
 // settings.gradle.kts
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
@@ -61,13 +62,17 @@ dependencies {
 }
 ```
 
-> Requires a published release and verified Sonatype namespace. See [PUBLISHING.md](PUBLISHING.md).
+Available on Maven Central. See [PUBLISHING.md](PUBLISHING.md) for newer versions and [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) to ship releases.
 
 ### JitPack
 
+[![JitPack v1.0.0](https://jitpack.io/v/saadkhalidkhan/PinFlow/v1.0.0.svg)](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.0.0)
+
+**Step 1.** Add the JitPack repository in `settings.gradle.kts` (at the end of `repositories`):
+
 ```kotlin
-// settings.gradle.kts
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
@@ -76,11 +81,15 @@ dependencyResolutionManagement {
 }
 ```
 
+**Step 2.** Add the dependency in `build.gradle.kts`:
+
 ```kotlin
 dependencies {
     implementation("com.github.saadkhalidkhan:PinFlow:1.0.0")
 }
 ```
+
+Build status: [green on JitPack for v1.0.0](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.0.0).
 
 ### Local module (development)
 
@@ -228,9 +237,14 @@ The sample demonstrates all modes, secure PIN, success/slide, single-field, and 
 |----------|---------|
 | [CI](.github/workflows/ci.yml) | Tests, assemble, Dokka on every push/PR |
 | [Docs](.github/workflows/docs.yml) | Deploy Dokka to GitHub Pages |
-| [Release](.github/workflows/release.yml) | Publish to Maven Central on `v*` tags |
+| [Release](.github/workflows/release.yml) | Publish to Maven Central on `v*` tags (or manual run) |
 
-See [PUBLISHING.md](PUBLISHING.md) for Sonatype, signing, and JitPack setup.
+| Guide | Purpose |
+|-------|---------|
+| [PUBLISHING.md](PUBLISHING.md) | Maven Central + JitPack install & troubleshooting |
+| [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) | Step-by-step for each new version |
+| [.github/SETUP_SECRETS.md](.github/SETUP_SECRETS.md) | Optional GitHub Actions secrets for CI publish |
+| [gradle.properties.example](gradle.properties.example) | Local credentials template (do not commit secrets) |
 
 ---
 

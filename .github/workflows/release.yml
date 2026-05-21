@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   publish:
@@ -24,6 +28,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Run unit tests
+        run: ./gradlew :pinflow:testDebugUnitTest --no-daemon --stacktrace
+
       - name: Publish to Maven Central
         run: ./gradlew :pinflow:publishToMavenCentral --no-daemon --stacktrace
         env:
@@ -31,3 +38,13 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+
+      - name: Publish summary
+        run: |
+          echo "## Maven Central publish finished" >> "$GITHUB_STEP_SUMMARY"
+          echo "Check https://central.sonatype.com/publishing/deployments" >> "$GITHUB_STEP_SUMMARY"
+          echo "Artifact: io.github.saadkhalidkhan:pinflow-compose" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Next steps (manual):**" >> "$GITHUB_STEP_SUMMARY"
+          echo "1. Verify JitPack: https://jitpack.io/#saadkhalidkhan/PinFlow" >> "$GITHUB_STEP_SUMMARY"
+          echo "2. Confirm artifact on repo1.maven.org (may take 10-30 min)" >> "$GITHUB_STEP_SUMMARY"

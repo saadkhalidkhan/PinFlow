@@ -90,5 +90,11 @@ mavenPublishing {
 }
 
 signing {
-    useGpgCmd()
+    val inMemoryKey = providers.gradleProperty("signingInMemoryKey").orNull
+    if (!inMemoryKey.isNullOrBlank()) {
+        val password = providers.gradleProperty("signingInMemoryKeyPassword").orNull
+        useInMemoryPgpKeys(inMemoryKey, password)
+    } else {
+        useGpgCmd()
+    }
 }

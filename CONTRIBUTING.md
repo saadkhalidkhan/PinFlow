@@ -34,4 +34,8 @@ Use GitHub Issues and include:
 
 ## Releases
 
-Maintainers only. See [PUBLISHING.md](PUBLISHING.md).
+Maintainers only.
+
+- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — version bump and publish steps  
+- [PUBLISHING.md](PUBLISHING.md) — Maven Central & JitPack details  
+- [.github/SETUP_SECRETS.md](.github/SETUP_SECRETS.md) — optional CI credentials  

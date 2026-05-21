@@ -1,0 +1,15 @@
+# Copy values into ~/.gradle/gradle.properties (recommended — never commit secrets).
+# See PUBLISHING.md and .github/SETUP_SECRETS.md
+
+# --- Maven Central (Central Portal user token) ---
+# mavenCentralUsername=YOUR_CENTRAL_USERNAME
+# mavenCentralPassword=YOUR_CENTRAL_PASSWORD
+
+# --- GPG signing (local publish via gpg agent) ---
+# signing.keyId=YOUR_KEY_ID
+# signing.password=YOUR_KEY_PASSPHRASE
+# signing.useGpgCmd=true
+
+# --- GPG signing (GitHub Actions — base64 armored private key) ---
+# signingInMemoryKey=BASE64_PRIVATE_KEY
+# signingInMemoryKeyPassword=YOUR_KEY_PASSPHRASE

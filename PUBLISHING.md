@@ -1,113 +1,257 @@
 # Publishing PinFlow
 
-This guide covers **JitPack** (quick) and **Maven Central** (production), plus the GitHub Actions release workflow.
+PinFlow **1.0.0** is live on Maven Central. This guide covers ongoing releases, **JitPack**, **Maven Central**, **GitHub Actions**, and verification.
 
-## Coordinates
+## Coordinates (current)
 
 | Channel | Dependency |
 |---------|------------|
 | **Maven Central** | `io.github.saadkhalidkhan:pinflow-compose:1.0.0` |
 | **JitPack** | `com.github.saadkhalidkhan:PinFlow:1.0.0` |
 
-Bump `PINFLOW_VERSION_NAME` in `gradle.properties` and create a Git tag `v1.0.0` for each release.
+For new versions: bump `PINFLOW_VERSION_NAME` in `gradle.properties` and tag `vX.Y.Z`. See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
 
 ---
 
-## JitPack (fastest)
+## Quick links
 
-1. Push the repo to GitHub (already at [saadkhalidkhan/PinFlow](https://github.com/saadkhalidkhan/PinFlow)).
-2. Create a release tag, e.g. `v1.0.0`:
+| Resource | URL |
+|----------|-----|
+| Maven Central artifact | https://central.sonatype.com/artifact/io.github.saadkhalidkhan/pinflow-compose |
+| Maven repo browser | https://repo1.maven.org/maven2/io/github/saadkhalidkhan/pinflow-compose/ |
+| JitPack builds | https://jitpack.io/#saadkhalidkhan/PinFlow |
+| GitHub Releases | https://github.com/saadkhalidkhan/PinFlow/releases |
+| API docs (Pages) | https://saadkhalidkhan.github.io/PinFlow/ |
+
+---
+
+## Consumers — installation
+
+### Maven Central
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+```
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("io.github.saadkhalidkhan:pinflow-compose:1.0.0")
+}
+```
+
+Sync Gradle after changing the version. First-time availability on Central can take **10–30 minutes** after publish.
+
+### JitPack
+
+**v1.0.0** — [green build](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.0.0)
+
+**Step 1.** Add the JitPack repository in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+**Step 2.** Add the dependency:
+
+```kotlin
+dependencies {
+    implementation("com.github.saadkhalidkhan:PinFlow:1.0.0")
+}
+```
+
+**Important:** Replace `1.0.0` with your tag (e.g. `1.0.1`). JitPack only builds **tagged** commits.
+
+---
+
+## JitPack — first time & each release
+
+1. Ensure the repo is public: [saadkhalidkhan/PinFlow](https://github.com/saadkhalidkhan/PinFlow).
+2. Create and push a tag (version must match `PINFLOW_VERSION_NAME`):
    ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
+   git tag v1.0.1
+   git push origin v1.0.1
    ```
-3. Open [jitpack.io](https://jitpack.io/#saadkhalidkhan/PinFlow) and look up the tag.
-4. Add to `settings.gradle.kts`:
-   ```kotlin
-   maven { url = uri("https://jitpack.io") }
-   ```
-5. In `build.gradle.kts`:
-   ```kotlin
-   implementation("com.github.saadkhalidkhan:PinFlow:1.0.0")
-   ```
+3. Open **https://jitpack.io/#saadkhalidkhan/PinFlow/v1.0.1** and wait for a green build.
+4. Click **Get it** to see the Gradle line.
 
-`jitpack.yml` in the repo root configures JDK 17 and publishes the `:pinflow` module to Maven Local for JitPack.
+`jitpack.yml` configures JDK 17, `assembleRelease`, and publish to Maven Local (signing disabled for JitPack).
+
+### JitPack troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Build failed | Open **Log** on JitPack; run the same command locally: `./gradlew :pinflow:assembleRelease :pinflow:publishMavenPublicationToMavenLocal -Psigning.required=false` |
+| Old version cached | Use **Look up** with the exact tag, or `1.0.1` not `v1.0.1` in the dependency string |
+| Dependency not found | Add `maven { url = uri("https://jitpack.io") }` in **settings**, not project `build.gradle` |
 
 ---
 
-## Maven Central (Sonatype)
+## Maven Central — Sonatype setup (one-time)
 
 ### 1. Register namespace
 
-1. Create an account at [Central Portal](https://central.sonatype.com/).
-2. Claim the namespace **`io.github.saadkhalidkhan`** (GitHub verification).
+1. Account at [Central Portal](https://central.sonatype.com/).
+2. Claim namespace **`io.github.saadkhalidkhan`** (GitHub verification).
 3. Wait for approval before the first upload.
 
 ### 2. GPG signing key
 
-Generate a key (if you do not have one):
-
 ```bash
 gpg --full-generate-key
-gpg --keyid-format short --export-secret-keys YOUR_KEY_ID > secring.gpg
+gpg --keyid-format short --list-secret-keys
 ```
 
-Base64-encode the private key for GitHub Actions:
+Publish the public key to a keyserver (Central requirement):
 
 ```bash
-gpg --armor --export-secret-keys YOUR_KEY_ID | base64 -w0
+gpg --keyid-format short --export YOUR_KEY_ID | gpg --import
+# Upload via https://keys.openpgp.org/ or keyserver.ubuntu.com
 ```
 
-### 3. GitHub repository secrets
+### 3. Local credentials (recommended location)
 
-Add these under **Settings → Secrets and variables → Actions**:
+Copy [gradle.properties.example](gradle.properties.example) and set values in **`~/.gradle/gradle.properties`** only:
 
-| Secret | Description |
-|--------|-------------|
-| `MAVEN_CENTRAL_USERNAME` | Central Portal user token |
-| `MAVEN_CENTRAL_PASSWORD` | Central Portal password / token |
-| `SIGNING_IN_MEMORY_KEY` | Base64-encoded GPG private key |
-| `SIGNING_IN_MEMORY_KEY_PASSWORD` | GPG key passphrase |
-
-### 4. Release
-
-```bash
-# Update version in gradle.properties, then:
-git add -A
-git commit -m "Release 1.0.0"
-git tag v1.0.0
-git push origin master --tags
+```properties
+mavenCentralUsername=YOUR_TOKEN_USER
+mavenCentralPassword=YOUR_TOKEN_PASSWORD
+signing.keyId=YOUR_KEY_ID
+signing.password=YOUR_KEY_PASSPHRASE
 ```
 
-The **Release** workflow (`.github/workflows/release.yml`) runs:
+Project `gradle.properties` already sets `signing.useGpgCmd=true` for local GPG.
+
+### 4. Publish locally
 
 ```bash
 ./gradlew :pinflow:publishToMavenCentral
 ```
 
-### 5. Enable GitHub Pages (API docs)
+Success looks like: `Deployment is being published to Maven Central` → **BUILD SUCCESSFUL**.
 
-1. Repo **Settings → Pages → Build and deployment → Source**: **GitHub Actions**.
-2. Push to `master` / `main` — the **Docs** workflow deploys Dokka HTML from `:pinflow:dokkaHtml`.
-
-Docs URL: `https://saadkhalidkhan.github.io/PinFlow/`
-
----
-
-## Local publish (dry run)
+Dry run (no upload):
 
 ```bash
-./gradlew :pinflow:publishToMavenLocal
+./gradlew :pinflow:publishToMavenLocal -Psigning.required=false
 ```
 
-Artifacts appear under `~/.m2/repository/io/github/saadkhalidkhan/pinflow-compose/`.
+Artifacts: `~/.m2/repository/io/github/saadkhalidkhan/pinflow-compose/`
 
 ---
 
-## Checklist before `v1.0.0`
+## GitHub Actions — optional CI releases
 
-- [ ] Replace placeholder images in `docs/images/` with real screenshots or GIFs
-- [ ] Sonatype namespace `io.github.saadkhalidkhan` verified
-- [ ] GitHub Actions secrets configured
-- [ ] GitHub Pages enabled for Dokka
-- [ ] Tag pushed and JitPack build green
+Automate Maven Central uploads on every `v*` tag.
+
+### Step 1 — Add secrets
+
+Follow [.github/SETUP_SECRETS.md](.github/SETUP_SECRETS.md) (4 secrets).
+
+### Step 2 — Enable workflows
+
+- **Actions** tab must be enabled for the repo.
+- Workflow file: [.github/workflows/release.yml](.github/workflows/release.yml)
+
+### Step 3 — Release via tag
+
+```bash
+# After bumping PINFLOW_VERSION_NAME and committing:
+git tag v1.0.1
+git push origin master
+git push origin v1.0.1
+```
+
+The **Release** workflow runs:
+
+```bash
+./gradlew :pinflow:testDebugUnitTest :pinflow:publishToMavenCentral
+```
+
+You can also run it manually: **Actions → Release → Run workflow** (if enabled).
+
+### Step 4 — GitHub Pages (API docs)
+
+1. **Settings → Pages → Build and deployment → Source:** **GitHub Actions**
+2. Push to `master` — **Docs** workflow runs `:pinflow:dokkaGeneratePublicationHtml` and deploys.
+
+Public URL: **https://saadkhalidkhan.github.io/PinFlow/**
+
+### Other workflows
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| [ci.yml](.github/workflows/ci.yml) | Push / PR | Tests, sample APK, Dokka artifact |
+| [docs.yml](.github/workflows/docs.yml) | Push to `master` | Deploy Dokka to Pages |
+| [release.yml](.github/workflows/release.yml) | Tag `v*` / manual | Maven Central publish |
+
+---
+
+## GitHub Release (optional)
+
+Creates a visible release on GitHub (good for changelog + JitPack discovery).
+
+```bash
+gh release create v1.0.1 --title "PinFlow 1.0.1" --notes "Bug fixes and ..."
+```
+
+Or: **Releases → New release** → select tag `v1.0.1` → publish.
+
+---
+
+## Verify a release
+
+### Maven Central
+
+```bash
+# Browser
+https://repo1.maven.org/maven2/io/github/saadkhalidkhan/pinflow-compose/1.0.0/
+```
+
+In a test app:
+
+```kotlin
+implementation("io.github.saadkhalidkhan:pinflow-compose:1.0.0")
+```
+
+Refresh Gradle; confirm `PinFlow` imports from `com.pinflow.compose`.
+
+### JitPack
+
+1. Green build at https://jitpack.io/#saadkhalidkhan/PinFlow/v1.0.0  
+2. Test dependency resolves in a clean project.
+
+---
+
+## Security
+
+- Never commit `mavenCentralPassword`, GPG keys, or `signing.properties`.
+- `.gitignore` excludes `central.properties`, `release.properties`, `signing.properties`.
+- Rotate Central tokens if exposed.
+- CI secrets: only in GitHub **Actions secrets**, not in the repo.
+
+---
+
+## Full release flow (summary)
+
+See **[RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)** for a printable checklist.
+
+1. Bump `PINFLOW_VERSION_NAME` + README version lines  
+2. Merge to `master`  
+3. `./gradlew :pinflow:testDebugUnitTest :sample:assembleDebug`  
+4. Publish Maven Central (local **or** push tag for CI)  
+5. Push same tag for JitPack → verify green on jitpack.io  
+6. Optional: GitHub Release + confirm Pages docs  
