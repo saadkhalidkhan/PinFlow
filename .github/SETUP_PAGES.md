@@ -26,9 +26,15 @@ If the workflow fails with permission errors:
 
 **Settings → Actions → General → Workflow permissions** → select **Read and write permissions** → Save.
 
-## Why not “GitHub Actions” as the Pages source?
+## Why PinFlow needed this (vs [ComposeGlassKitTheme](https://github.com/saadkhalidkhan/ComposeGlassKitTheme))
 
-The native `deploy-pages` action returned `404 Not Found` because Pages was not fully registered for this repo. Publishing to **`gh-pages`** avoids that API and is a common pattern for library docs.
+| ComposeGlassKitTheme | PinFlow (this repo) |
+|----------------------|---------------------|
+| Docs are **static** Markdown in `docs/` (README links only) | Optional **Dokka HTML** on GitHub Pages |
+| CI = tests + build only (`android-ci.yml`) | CI also tried Dokka + Pages deploy |
+| No `deploy-pages` / Pages API | First-time Pages setup was required |
+
+ComposeGlassKit did not hit `404` / `deploy-pages` errors because it never automated hosted API docs. PinFlow’s `gh-pages` workflow matches that simpler model once Pages points at the branch.
 
 ## Optional
 

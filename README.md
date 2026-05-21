@@ -12,11 +12,27 @@
 
 **PinFlow** is a lightweight, animated, and customizable **OTP / PIN input** library for Jetpack Compose. Built with Material 3, smart paste handling, secure PIN mode, and smooth interaction states — add polished verification flows in minutes.
 
+[**Report a bug**](https://github.com/saadkhalidkhan/PinFlow/issues) · [**Contributing**](CONTRIBUTING.md) · [**Security**](SECURITY.md)
+
 <p align="center">
   <img src="docs/images/hero.gif" alt="PinFlow sample app demo" width="400"/>
 </p>
 
 ---
+
+## Table of contents
+
+- [Features](#features)
+- [Preview](#preview)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Usage examples](#usage-examples)
+- [API documentation](#api-documentation)
+- [Sample app](#sample-app)
+- [Publishing & CI](#publishing--ci)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
 
 ## Features
 
@@ -197,7 +213,7 @@ PinFlowValidator.hasRepeatedDigits(otp)
 
 ---
 
-## API documentation (Dokka)
+## API documentation
 
 HTML API reference is generated with [Dokka](https://kotl.in/dokka) and published to GitHub Pages:
 
@@ -251,16 +267,25 @@ The sample demonstrates all modes, secure PIN, success/slide, single-field, and 
 
 ## Contributing
 
-Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before opening an issue or pull request.
+
+1. Open an issue to discuss larger changes.
+2. Fork the repo and create a branch from `master`.
+3. Run `./gradlew :pinflow:testDebugUnitTest :sample:assembleDebug` before opening a PR.
+4. Open a pull request with a clear description and media for UI changes.
 
 ---
 
 ## License
 
-```
-Copyright 2026 Saad Khalid Khan
+This project is licensed under the **Apache License 2.0** — see [LICENSE](LICENSE).
 
-Licensed under the Apache License, Version 2.0
+```
+Copyright 2026 Saad Khan
 ```
 
-See [LICENSE](LICENSE) for the full text.
+## Author
+
+**Saad Khan** — [GitHub](https://github.com/saadkhalidkhan) · [Medium](https://medium.com/@saadkhan0799) · [ranasaad0799@gmail.com](mailto:ranasaad0799@gmail.com)
+
+If this library helps you, consider starring the repo.
