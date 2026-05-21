@@ -1,20 +1,20 @@
 name: Docs
 
-# Requires a one-time manual setup — see .github/SETUP_PAGES.md
+# Publishes Dokka HTML to the gh-pages branch. See .github/SETUP_PAGES.md for one-time Pages setup.
 on:
   push:
     branches: [master, main]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: docs-gh-pages
+  cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,21 +36,10 @@ jobs:
       - name: Verify Dokka output
         run: test -f pinflow/build/dokka/html/index.html
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: pinflow/build/dokka/html
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: pinflow/build/dokka/html
+          publish_branch: gh-pages
+          force_orphan: true

@@ -1,24 +1,36 @@
-# GitHub Pages setup (one-time, manual)
+# GitHub Pages setup (one-time)
 
-The **Docs** workflow cannot enable Pages for you (`Resource not accessible by integration`). A repo **admin** must turn it on once.
+The **Docs** workflow publishes Dokka HTML to the **`gh-pages`** branch. You only need to point GitHub Pages at that branch once.
 
-## Steps
+## Step 1 — Run the Docs workflow
+
+1. Push to `master`, **or**
+2. **Actions → Docs → Run workflow**
+
+Wait until the run is **green**. That creates/updates the `gh-pages` branch.
+
+## Step 2 — Enable Pages (repo admin)
 
 1. Open **https://github.com/saadkhalidkhan/PinFlow/settings/pages**
-2. Under **Build and deployment** → **Source**, choose **GitHub Actions** (not “Deploy from a branch”).
-3. Click **Save**.
-4. Re-run the workflow: **Actions → Docs → Run workflow** (or push to `master`).
+2. **Build and deployment → Source:** **Deploy from a branch**
+3. **Branch:** `gh-pages` → folder **`/ (root)`**
+4. Click **Save**
 
-After a green run, API docs are at:
+After 1–2 minutes, API docs should be live at:
 
 **https://saadkhalidkhan.github.io/PinFlow/**
 
-## If it still fails
+## Workflow permissions
 
-- Confirm you have **Admin** on the repository.
-- **Settings → Actions → General → Workflow permissions** → **Read and write permissions** (recommended for Pages deploy).
-- Check **Settings → Environments → github-pages** exists (created automatically after first successful deploy).
+If the workflow fails with permission errors:
+
+**Settings → Actions → General → Workflow permissions** → select **Read and write permissions** → Save.
+
+## Why not “GitHub Actions” as the Pages source?
+
+The native `deploy-pages` action returned `404 Not Found` because Pages was not fully registered for this repo. Publishing to **`gh-pages`** avoids that API and is a common pattern for library docs.
 
 ## Optional
 
-You can disable the Docs workflow until Pages is configured; **CI** and publishing to Maven Central / JitPack do not depend on it.
+- **CI** and **Maven Central / JitPack** do not depend on Pages.
+- To skip docs deploys, disable or ignore the **Docs** workflow.

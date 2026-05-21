@@ -187,14 +187,12 @@ You can also run it manually: **Actions → Release → Run workflow** (if enabl
 
 Requires **Dokka 2.2.0+** (AGP 9 compatibility) — already configured in this repo.
 
-**One-time manual setup (required):** [.github/SETUP_PAGES.md](.github/SETUP_PAGES.md)
+**One-time setup:** [.github/SETUP_PAGES.md](.github/SETUP_PAGES.md)
 
-1. **Settings → Pages → Source:** **GitHub Actions** (must be done by a repo admin).
-2. Push to `master` or run **Actions → Docs**.
+1. Run **Actions → Docs** (pushes Dokka HTML to the `gh-pages` branch).
+2. **Settings → Pages → Deploy from a branch → `gh-pages` / (root).**
 
 Public URL: **https://saadkhalidkhan.github.io/PinFlow/**
-
-If you see `Resource not accessible by integration`, enable Pages manually — the workflow cannot create the site for you.
 
 ### Other workflows
 
