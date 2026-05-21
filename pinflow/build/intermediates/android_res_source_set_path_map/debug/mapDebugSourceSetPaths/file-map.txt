@@ -1,8 +1,0 @@
-com.pinflow.compose.pinflow-pngs-0 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\build\generated\res\pngs\debug
-com.pinflow.compose.pinflow-updated_navigation_xml-1 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\build\generated\updated_navigation_xml\debug
-com.pinflow.compose.pinflow-mergeDebugResources-2 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\build\intermediates\incremental\debug\mergeDebugResources\merged.dir
-com.pinflow.compose.pinflow-mergeDebugResources-3 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\build\intermediates\incremental\debug\mergeDebugResources\stripped.dir
-com.pinflow.compose.pinflow-debug-4 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\build\intermediates\merged_res\debug\mergeDebugResources
-com.pinflow.compose.pinflow-debug-5 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\build\intermediates\packaged_res\debug\packageDebugResources
-com.pinflow.compose.pinflow-debug-6 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\src\debug\res
-com.pinflow.compose.pinflow-main-7 C:\Users\Saad\Documents\Projects\Libraries\PinFlow\pinflow\src\main\res

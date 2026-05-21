@@ -3,4 +3,4 @@ jdk:
 before_install:
   - chmod +x ./gradlew
 install:
-  - ./gradlew :pinflow:publishMavenPublicationToMavenLocal --no-daemon -x test
+  - ./gradlew :pinflow:assembleRelease :pinflow:publishMavenPublicationToMavenLocal --no-daemon -x test -Psigning.required=false

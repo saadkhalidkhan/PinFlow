@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
+    signing
 }
 
 val pinflowGroup = providers.gradleProperty("PINFLOW_GROUP").get()
@@ -47,8 +48,14 @@ dependencies {
 }
 
 mavenPublishing {
-    publishToMavenCentral()
-    signAllPublications()
+    publishToMavenCentral(automaticRelease = true)
+
+    val signingRequired = providers.gradleProperty("signing.required")
+        .map { it.toBoolean() }
+        .getOrElse(true)
+    if (signingRequired) {
+        signAllPublications()
+    }
 
     coordinates(pinflowGroup, pinflowArtifactId, pinflowVersion)
 
@@ -80,4 +87,8 @@ mavenPublishing {
             developerConnection.set("scm:git:ssh://git@github.com/saadkhalidkhan/PinFlow.git")
         }
     }
+}
+
+signing {
+    useGpgCmd()
 }
