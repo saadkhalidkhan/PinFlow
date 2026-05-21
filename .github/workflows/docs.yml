@@ -37,7 +37,7 @@ jobs:
         run: test -f pinflow/build/dokka/html/index.html
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: pinflow/build/dokka/html
 
