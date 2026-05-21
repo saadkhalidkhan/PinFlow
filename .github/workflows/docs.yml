@@ -38,8 +38,13 @@ jobs:
       - name: Generate Dokka HTML
         run: ./gradlew :pinflow:dokkaGeneratePublicationHtml --no-daemon --stacktrace
 
+      - name: Verify Dokka output
+        run: test -f pinflow/build/dokka/html/index.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          enablement: true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -36,6 +36,8 @@ android {
 dependencies {
     testImplementation(libs.junit)
 
+    dokkaPlugin("org.jetbrains.dokka:android-documentation-plugin:2.2.0")
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)

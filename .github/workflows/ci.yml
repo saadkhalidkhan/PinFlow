@@ -38,6 +38,14 @@ jobs:
       - name: Generate Dokka HTML
         run: ./gradlew :pinflow:dokkaGeneratePublicationHtml --no-daemon --stacktrace
 
+      - name: Verify Dokka output
+        run: |
+          if [ ! -f pinflow/build/dokka/html/index.html ]; then
+            echo "Dokka HTML missing — listing pinflow/build:"
+            find pinflow/build -name "index.html" 2>/dev/null || true
+            exit 1
+          fi
+
       - name: Upload Dokka artifact
         uses: actions/upload-artifact@v4
         with:

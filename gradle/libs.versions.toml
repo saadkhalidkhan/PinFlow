@@ -35,7 +35,7 @@ moshiKotlin = "1.15.2"
 moshiKotlinCodegen = "1.15.2"
 datastorePreferences = "1.1.7"
 material = "1.4.0"
-dokka = "2.0.0"
+dokka = "2.2.0"
 mavenPublish = "0.36.0"
 
 [libraries]
