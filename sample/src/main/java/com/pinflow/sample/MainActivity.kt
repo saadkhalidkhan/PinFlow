@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -42,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,7 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pinflow.compose.PinFlow
 import com.pinflow.compose.PinFlowAnimation
+import com.pinflow.compose.PinFlowCellState
 import com.pinflow.compose.PinFlowMode
+import com.pinflow.compose.PinFlowThemes
 import com.pinflow.compose.PinFlowValidator
 import com.pinflow.sample.ui.theme.PinFlowTheme
 
@@ -250,18 +256,102 @@ fun DemoScreen(modifier: Modifier = Modifier) {
         }
 
         DemoSection(
-            title = "Theme-aware motion",
-            description = "Bounce, glow, and M3 colors adapt to light/dark and dynamic color.",
+            title = "Neon + gradient borders",
+            description = "PinFlowThemes.Neon() with animated gradient borders and a custom cursor.",
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("PinFlowDefaults.colors()", style = MaterialTheme.typography.labelLarge)
-            }
+            var pin by remember { mutableStateOf("") }
+            PinFlow(
+                value = pin,
+                onValueChange = { pin = it },
+                style = PinFlowThemes.Neon(),
+                hapticEnabled = true,
+                animations = setOf(PinFlowAnimation.Glow, PinFlowAnimation.Bounce),
+            )
+        }
+
+        DemoSection(
+            title = "Glass theme",
+            description = "Translucent cells and soft gradient borders — adapts to light and dark.",
+        ) {
+            var pin by remember { mutableStateOf("") }
+            PinFlow(
+                value = pin,
+                onValueChange = { pin = it },
+                style = PinFlowThemes.Glass(),
+            )
+        }
+
+        DemoSection(
+            title = "Minimal theme",
+            description = "Thin monochrome borders, no fill — PinFlowThemes.Minimal().",
+        ) {
+            var pin by remember { mutableStateOf("") }
+            PinFlow(
+                value = pin,
+                onValueChange = { pin = it },
+                mode = PinFlowMode.Underline,
+                style = PinFlowThemes.Minimal(),
+            )
+        }
+
+        DemoSection(
+            title = "Custom cell content",
+            description = "Render your own digit UI while keeping PinFlow keyboard and paste behavior.",
+        ) {
+            var pin by remember { mutableStateOf("") }
+            val gradient = Brush.linearGradient(
+                colors = listOf(
+                    MaterialTheme.colorScheme.primary,
+                    MaterialTheme.colorScheme.tertiary,
+                ),
+            )
+            PinFlow(
+                value = pin,
+                onValueChange = { pin = it },
+                borderBrush = gradient,
+                cursorColor = Color.Red,
+                cursorWidth = 3.dp,
+                cellContent = { digit, state ->
+                    if (digit == null) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .background(
+                                    color = when (state) {
+                                        PinFlowCellState.Focused -> MaterialTheme.colorScheme.primary
+                                        PinFlowCellState.Error -> MaterialTheme.colorScheme.error
+                                        else -> MaterialTheme.colorScheme.outline
+                                    },
+                                    shape = CircleShape,
+                                ),
+                        )
+                    } else {
+                        Text(
+                            text = digit.toString(),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = when (state) {
+                                PinFlowCellState.Error -> MaterialTheme.colorScheme.error
+                                PinFlowCellState.Success -> MaterialTheme.colorScheme.tertiary
+                                else -> MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                    }
+                },
+            )
+        }
+
+        DemoSection(
+            title = "Haptic feedback",
+            description = "hapticEnabled = true — feel a tap on each digit (device dependent).",
+        ) {
+            var pin by remember { mutableStateOf("") }
+            PinFlow(
+                value = pin,
+                onValueChange = { pin = it },
+                hapticEnabled = true,
+                mode = PinFlowMode.Circle,
+            )
         }
 
         Spacer(modifier = Modifier.height(64.dp))
