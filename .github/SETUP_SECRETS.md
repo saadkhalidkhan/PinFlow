@@ -45,7 +45,25 @@ Paste the **entire** base64 string into the `SIGNING_IN_MEMORY_KEY` secret.
 
 | Where you publish | Signing method |
 |-------------------|----------------|
-| **Your PC** | `signing.keyId` + `signing.password` in `~/.gradle/gradle.properties` and `signing.useGpgCmd=true` in project `gradle.properties` |
-| **GitHub Actions** | `SIGNING_IN_MEMORY_*` secrets → `signingInMemoryKey` Gradle properties (set by the Release workflow) |
+| **Your PC** | `signing.keyId` + `signing.password` + `signing.useGpgCmd=true` in `~/.gradle/gradle.properties` |
+| **GitHub Actions** | All four repository secrets above → in-memory PGP keys (Release workflow sets `signing.useGpgCmd=false`) |
 
 Do **not** commit real credentials. Use [gradle.properties.example](../gradle.properties.example) as a template.
+
+## Troubleshooting CI: `gpg: no default secret key`
+
+This means the **Release** workflow fell back to `gpg` instead of in-memory signing. Common causes:
+
+1. **Secrets not configured** — `gh secret list` is empty. Add all four secrets from the table above.
+2. **`signing.useGpgCmd=true` in project `gradle.properties`** — removed from the repo; keep it only in local `~/.gradle/gradle.properties`.
+3. **Wrong key format** — `SIGNING_IN_MEMORY_KEY` must be the **base64** of your armored private key export (see export commands above).
+
+After adding secrets, re-run the failed workflow: **Actions → Release → Re-run all jobs**, or push a new tag.
+
+## Re-run publish without a new release
+
+```bash
+gh workflow run release --ref v1.1.0
+```
+
+Or from GitHub: **Actions → Release → Run workflow** and select the tag branch.
