@@ -45,6 +45,11 @@
 | **Secure PIN** | Masking + optional reveal-last-digit |
 | **Validation** | `PinFlowValidator` helpers + `onComplete` callback |
 | **Material 3** | `PinFlowDefaults.colors()` / `dimensions()` |
+| **Gradient borders** | `borderBrush = Brush.linearGradient(...)` |
+| **Cursor styling** | `cursorColor`, `cursorWidth` on focused cells |
+| **Custom cells** | `cellContent = { digit, state -> … }` |
+| **Haptics** | `hapticEnabled = true` on digit entry |
+| **Preset themes** | `PinFlowThemes.Default` / `Glass` / `Neon` / `Minimal` |
 
 ---
 
@@ -74,7 +79,7 @@ dependencyResolutionManagement {
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.saadkhalidkhan:pinflow-compose:1.0.0")
+    implementation("io.github.saadkhalidkhan:pinflow-compose:1.1.0")
 }
 ```
 
@@ -82,7 +87,7 @@ Available on Maven Central. See [PUBLISHING.md](PUBLISHING.md) for newer version
 
 ### JitPack
 
-[![JitPack v1.0.0](https://jitpack.io/v/saadkhalidkhan/PinFlow/v1.0.0.svg)](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.0.0)
+[![JitPack v1.1.0](https://jitpack.io/v/saadkhalidkhan/PinFlow/v1.1.0.svg)](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.1.0)
 
 **Step 1.** Add the JitPack repository in `settings.gradle.kts` (at the end of `repositories`):
 
@@ -101,11 +106,11 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.saadkhalidkhan:PinFlow:1.0.0")
+    implementation("com.github.saadkhalidkhan:PinFlow:1.1.0")
 }
 ```
 
-Build status: [green on JitPack for v1.0.0](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.0.0).
+Build status: [JitPack builds](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.1.0) for tagged releases.
 
 ### Local module (development)
 
@@ -209,6 +214,52 @@ PinFlow(
 PinFlowValidator.isComplete(otp, length = 6)
 PinFlowValidator.isNumeric(otp)
 PinFlowValidator.hasRepeatedDigits(otp)
+```
+
+### Gradient borders & cursor
+
+```kotlin
+PinFlow(
+    value = code,
+    onValueChange = { code = it },
+    borderBrush = Brush.linearGradient(
+        colors = listOf(Color(0xFF00E5FF), Color(0xFFFF00E5)),
+    ),
+    cursorColor = Color.Red,
+    cursorWidth = 3.dp,
+)
+```
+
+### Preset themes (light / dark adaptive)
+
+```kotlin
+PinFlow(
+    value = code,
+    onValueChange = { code = it },
+    style = PinFlowThemes.Neon(),
+    hapticEnabled = true,
+)
+```
+
+Themes: `PinFlowThemes.Default()`, `Glass()`, `Neon()`, `Minimal()`. Override individual props (`borderBrush`, `cursorColor`, …) when needed — they take precedence over `style`.
+
+### Custom cell content
+
+```kotlin
+PinFlow(
+    value = code,
+    onValueChange = { code = it },
+    cellContent = { digit, state ->
+        Text(
+            text = digit?.toString() ?: "•",
+            color = when (state) {
+                PinFlowCellState.Error -> Color.Red
+                PinFlowCellState.Success -> Color.Green
+                else -> Color.White
+            },
+        )
+    },
+)
 ```
 
 ---
