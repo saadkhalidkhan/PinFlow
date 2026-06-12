@@ -3,8 +3,12 @@ package com.pinflow.compose
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -48,16 +52,20 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -76,6 +84,7 @@ fun PinFlow(
     revealLastDigit: Boolean = false,
     isAlphanumeric: Boolean = false,
     animations: Set<PinFlowAnimation> = PinFlowDefaults.animations(),
+    style: PinFlowStyle? = null,
     colors: PinFlowColors = PinFlowDefaults.colors(),
     dimensions: PinFlowDimensions = PinFlowDefaults.dimensions(),
     keyboardOptions: KeyboardOptions = PinFlowDefaults.keyboardOptions(
@@ -87,8 +96,20 @@ fun PinFlow(
     isSuccess: Boolean = false,
     enabled: Boolean = true,
     maskChar: String = "\u2022",
+    borderBrush: Brush? = null,
+    cursorColor: Color? = null,
+    cursorWidth: Dp? = null,
+    cellContent: PinFlowCellContent? = null,
+    hapticEnabled: Boolean = false,
     onComplete: ((String) -> Unit)? = null,
 ) {
+    val effectiveColors = style?.colors ?: colors
+    val effectiveDimensions = style?.dimensions ?: dimensions
+    val effectiveBorderBrush = borderBrush ?: style?.borderBrush
+    val resolvedCursorColor = cursorColor ?: style?.cursorColor ?: effectiveColors.cursorColor
+    val resolvedCursorWidth = cursorWidth ?: style?.cursorWidth ?: effectiveDimensions.cursorWidth
+    val haptic = LocalHapticFeedback.current
+    var previousLength by remember { mutableIntStateOf(value.length) }
     val resolvedSecure = secure || mode == PinFlowMode.SecurePin
     val slotMode = when (mode) {
         PinFlowMode.SecurePin -> PinFlowMode.Circle
@@ -107,13 +128,13 @@ fun PinFlow(
         fontSize = 1.sp,
     )
 
-    val layoutDimensions = remember(dimensions, length) {
+    val layoutDimensions = remember(effectiveDimensions, length) {
         when {
-            length >= 6 -> dimensions.copy(
-                cellWidth = minOf(dimensions.cellWidth, 44.dp),
-                spacing = minOf(dimensions.spacing, 10.dp),
+            length >= 6 -> effectiveDimensions.copy(
+                cellWidth = minOf(effectiveDimensions.cellWidth, 44.dp),
+                spacing = minOf(effectiveDimensions.spacing, 10.dp),
             )
-            else -> dimensions
+            else -> effectiveDimensions
         }
     }
 
@@ -128,6 +149,13 @@ fun PinFlow(
         if (PinFlowValidator.isComplete(value, length)) {
             onComplete?.invoke(value)
         }
+    }
+
+    LaunchedEffect(value) {
+        if (hapticEnabled && value.length > previousLength) {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        }
+        previousLength = value.length
     }
 
     LaunchedEffect(value) {
@@ -193,9 +221,12 @@ fun PinFlow(
                 secure = resolvedSecure,
                 revealedIndex = revealedIndex,
                 maskChar = maskChar,
-                colors = colors,
+                colors = effectiveColors,
                 dimensions = layoutDimensions,
                 animations = animations,
+                borderBrush = effectiveBorderBrush,
+                cursorColor = resolvedCursorColor,
+                cursorWidth = resolvedCursorWidth,
             )
         } else {
             Row(
@@ -221,9 +252,13 @@ fun PinFlow(
                         obscureText = shouldObscure,
                         mode = slotMode,
                         maskChar = maskChar,
-                        colors = colors,
+                        colors = effectiveColors,
                         dimensions = layoutDimensions,
                         animations = animations,
+                        borderBrush = effectiveBorderBrush,
+                        cursorColor = resolvedCursorColor,
+                        cursorWidth = resolvedCursorWidth,
+                        cellContent = cellContent,
                     )
                 }
             }
@@ -249,7 +284,7 @@ fun PinFlow(
                     .focusRequester(focusRequester)
                     .onFocusChanged { isFocused = it.isFocused },
                 textStyle = hiddenFieldTextStyle,
-                cursorBrush = SolidColor(Color.Transparent),
+                cursorBrush = SolidColor(resolvedCursorColor.copy(alpha = 0.01f)),
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
                 decorationBox = { innerTextField ->
@@ -303,6 +338,9 @@ private fun SingleFieldDisplay(
     colors: PinFlowColors,
     dimensions: PinFlowDimensions,
     animations: Set<PinFlowAnimation>,
+    borderBrush: Brush?,
+    cursorColor: Color,
+    cursorWidth: Dp,
 ) {
     val display = buildString {
         for (i in 0 until length) {
@@ -336,34 +374,45 @@ private fun SingleFieldDisplay(
         }
     }
 
+    val borderWidth = if (isFocused) dimensions.focusedBorderWidth else dimensions.unfocusedBorderWidth
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(dimensions.cellHeight)
             .graphicsLayer { translationY = slideOffset.value }
-            .border(
-                width = if (isFocused) dimensions.focusedBorderWidth else dimensions.unfocusedBorderWidth,
-                color = borderColor,
-                shape = dimensions.boxShape,
-            )
-            .background(
-                color = if (isFocused) colors.focusedContainerColor else colors.unfocusedContainerColor,
-                shape = dimensions.boxShape,
+            .then(
+                Modifier.pinFlowCellChrome(
+                    borderWidth = borderWidth,
+                    borderColor = borderColor,
+                    borderBrush = borderBrush,
+                    containerColor = if (isFocused) {
+                        colors.focusedContainerColor
+                    } else {
+                        colors.unfocusedContainerColor
+                    },
+                    shape = dimensions.boxShape,
+                    underline = false,
+                ),
             )
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = if (value.isEmpty() && isFocused) "Enter code" else display,
-            style = MaterialTheme.typography.headlineSmall,
-            letterSpacing = 6.sp,
-            textAlign = TextAlign.Center,
-            color = when {
-                isError -> colors.errorTextColor
-                isSuccess -> colors.successTextColor
-                else -> colors.textColor
-            },
-        )
+        if (value.isEmpty() && isFocused) {
+            PinFlowCursor(color = cursorColor, width = cursorWidth)
+        } else {
+            Text(
+                text = display,
+                style = MaterialTheme.typography.headlineSmall,
+                letterSpacing = 6.sp,
+                textAlign = TextAlign.Center,
+                color = when {
+                    isError -> colors.errorTextColor
+                    isSuccess -> colors.successTextColor
+                    else -> colors.textColor
+                },
+            )
+        }
     }
 }
 
@@ -383,6 +432,66 @@ private fun resolveCellState(
 }
 
 @Composable
+private fun PinFlowCursor(
+    color: Color,
+    width: Dp,
+) {
+    val transition = rememberInfiniteTransition(label = "pinFlowCursor")
+    val alpha by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(530),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "cursorAlpha",
+    )
+    Box(
+        modifier = Modifier
+            .width(width)
+            .height(24.dp)
+            .background(color.copy(alpha = alpha)),
+    )
+}
+
+private fun Modifier.pinFlowCellChrome(
+    borderWidth: Dp,
+    borderColor: Color,
+    borderBrush: Brush?,
+    containerColor: Color,
+    shape: Shape,
+    underline: Boolean,
+): Modifier = if (underline) {
+    drawBehind {
+        val strokeWidth = borderWidth.toPx()
+        val y = size.height - strokeWidth / 2
+        if (borderBrush != null) {
+            drawLine(
+                brush = borderBrush,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = strokeWidth,
+            )
+        } else {
+            drawLine(
+                color = borderColor,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = strokeWidth,
+            )
+        }
+    }
+} else {
+    then(
+        if (borderBrush != null) {
+            Modifier.border(width = borderWidth, brush = borderBrush, shape = shape)
+        } else {
+            Modifier.border(width = borderWidth, color = borderColor, shape = shape)
+        },
+    ).background(color = containerColor, shape = shape)
+}
+
+@Composable
 private fun PinFlowCell(
     char: Char?,
     cellState: PinFlowCellState,
@@ -392,6 +501,10 @@ private fun PinFlowCell(
     colors: PinFlowColors,
     dimensions: PinFlowDimensions,
     animations: Set<PinFlowAnimation>,
+    borderBrush: Brush?,
+    cursorColor: Color,
+    cursorWidth: Dp,
+    cellContent: PinFlowCellContent?,
 ) {
     val borderColor by animateColorAsState(
         targetValue = when (cellState) {
@@ -477,45 +590,45 @@ private fun PinFlowCell(
             }
             .then(glowModifier)
             .then(
-                if (mode == PinFlowMode.Underline) {
-                    Modifier.drawBehind {
-                        val strokeWidth = borderWidth.toPx()
-                        val y = size.height - strokeWidth / 2
-                        drawLine(
-                            color = borderColor,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = strokeWidth,
-                        )
-                    }
-                } else {
-                    Modifier
-                        .border(width = borderWidth, color = borderColor, shape = shape)
-                        .background(color = containerColor, shape = shape)
-                },
+                Modifier.pinFlowCellChrome(
+                    borderWidth = borderWidth,
+                    borderColor = borderColor,
+                    borderBrush = borderBrush,
+                    containerColor = containerColor,
+                    shape = shape,
+                    underline = mode == PinFlowMode.Underline,
+                ),
             )
             .scale(scale.value),
         contentAlignment = Alignment.Center,
     ) {
-        val textColor = when (cellState) {
-            PinFlowCellState.Error -> colors.errorTextColor
-            PinFlowCellState.Success -> colors.successTextColor
-            else -> colors.textColor
-        }
+        if (cellContent != null) {
+            cellContent(char, cellState)
+        } else {
+            val textColor = when (cellState) {
+                PinFlowCellState.Error -> colors.errorTextColor
+                PinFlowCellState.Success -> colors.successTextColor
+                else -> colors.textColor
+            }
 
-        val text = when {
-            char == null -> ""
-            obscureText -> maskChar
-            else -> char.toString()
-        }
+            val text = when {
+                char == null -> ""
+                obscureText -> maskChar
+                else -> char.toString()
+            }
 
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            color = textColor,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Visible,
-        )
+            if (char == null && cellState == PinFlowCellState.Focused) {
+                PinFlowCursor(color = cursorColor, width = cursorWidth)
+            } else {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = textColor,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Visible,
+                )
+            }
+        }
     }
 }

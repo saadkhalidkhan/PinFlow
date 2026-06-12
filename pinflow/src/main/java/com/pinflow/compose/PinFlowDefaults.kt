@@ -26,6 +26,7 @@ object PinFlowDefaults {
         errorTextColor: Color = MaterialTheme.colorScheme.error,
         successTextColor: Color = MaterialTheme.colorScheme.tertiary,
         glowColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+        cursorColor: Color = MaterialTheme.colorScheme.primary,
     ): PinFlowColors = PinFlowColors(
         focusedBorderColor = focusedBorderColor,
         unfocusedBorderColor = unfocusedBorderColor,
@@ -37,6 +38,7 @@ object PinFlowDefaults {
         errorTextColor = errorTextColor,
         successTextColor = successTextColor,
         glowColor = glowColor,
+        cursorColor = cursorColor,
     )
 
     fun dimensions(
@@ -46,6 +48,7 @@ object PinFlowDefaults {
         cornerRadius: Dp = 12.dp,
         focusedBorderWidth: Dp = 2.dp,
         unfocusedBorderWidth: Dp = 1.dp,
+        cursorWidth: Dp = 2.dp,
     ): PinFlowDimensions = PinFlowDimensions(
         cellWidth = cellWidth,
         cellHeight = cellHeight,
@@ -53,6 +56,7 @@ object PinFlowDefaults {
         cornerRadius = cornerRadius,
         focusedBorderWidth = focusedBorderWidth,
         unfocusedBorderWidth = unfocusedBorderWidth,
+        cursorWidth = cursorWidth,
     )
 
     fun animations(): Set<PinFlowAnimation> = setOf(
@@ -87,6 +91,7 @@ data class PinFlowColors(
     val errorTextColor: Color,
     val successTextColor: Color,
     val glowColor: Color,
+    val cursorColor: Color,
 )
 
 @Immutable
@@ -97,6 +102,7 @@ data class PinFlowDimensions(
     val cornerRadius: Dp,
     val focusedBorderWidth: Dp,
     val unfocusedBorderWidth: Dp,
+    val cursorWidth: Dp,
 ) {
     val boxShape: Shape get() = RoundedCornerShape(cornerRadius)
 }
