@@ -1,13 +1,13 @@
 # Publishing PinFlow
 
-PinFlow **1.1.0** is live on Maven Central. This guide covers ongoing releases, **JitPack**, **Maven Central**, **GitHub Actions**, and verification.
+PinFlow **1.1.1** is live on Maven Central. This guide covers ongoing releases, **JitPack**, **Maven Central**, **GitHub Actions**, and verification.
 
 ## Coordinates (current)
 
 | Channel | Dependency |
 |---------|------------|
-| **Maven Central** | `io.github.saadkhalidkhan:pinflow-compose:1.1.0` |
-| **JitPack** | `com.github.saadkhalidkhan:PinFlow:1.1.0` |
+| **Maven Central** | `io.github.saadkhalidkhan:pinflow-compose:1.1.1` |
+| **JitPack** | `com.github.saadkhalidkhan:PinFlow:1.1.1` |
 
 For new versions: bump `PINFLOW_VERSION_NAME` in `gradle.properties` and tag `vX.Y.Z`. See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
 

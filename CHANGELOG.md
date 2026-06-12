@@ -2,6 +2,15 @@
 
 All notable changes to PinFlow are documented here.
 
+## [1.1.1] — 2026-06-12
+
+### Fixed
+
+- GitHub Actions Release workflow: in-memory GPG signing for Maven Central CI publish
+- Document armored-key export for `SIGNING_IN_MEMORY_KEY` secret
+
+No API changes — same library as 1.1.0.
+
 ## [1.1.0] — 2026-05-20
 
 ### Added

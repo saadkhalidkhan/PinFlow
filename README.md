@@ -79,7 +79,7 @@ dependencyResolutionManagement {
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.saadkhalidkhan:pinflow-compose:1.1.0")
+    implementation("io.github.saadkhalidkhan:pinflow-compose:1.1.1")
 }
 ```
 
@@ -87,7 +87,7 @@ Available on Maven Central. See [PUBLISHING.md](PUBLISHING.md) for newer version
 
 ### JitPack
 
-[![JitPack v1.1.0](https://jitpack.io/v/saadkhalidkhan/PinFlow/v1.1.0.svg)](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.1.0)
+[![JitPack v1.1.1](https://jitpack.io/v/saadkhalidkhan/PinFlow/v1.1.1.svg)](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.1.1)
 
 **Step 1.** Add the JitPack repository in `settings.gradle.kts` (at the end of `repositories`):
 
@@ -106,11 +106,11 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.saadkhalidkhan:PinFlow:1.1.0")
+    implementation("com.github.saadkhalidkhan:PinFlow:1.1.1")
 }
 ```
 
-Build status: [JitPack builds](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.1.0) for tagged releases.
+Build status: [JitPack builds](https://jitpack.io/#saadkhalidkhan/PinFlow/v1.1.1) for tagged releases.
 
 ### Local module (development)
 

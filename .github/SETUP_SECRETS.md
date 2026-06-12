@@ -13,9 +13,37 @@ Configure these so the **Release** workflow can publish to Maven Central when yo
 
 ## Export signing key for CI (one-time)
 
-Replace `YOUR_KEY_ID` with your short key id (e.g. from `gpg --list-secret-keys --keyid-format short`).
+Replace `YOUR_KEY_ID` with your short key id (same as `signing.keyId` in `~/.gradle/gradle.properties`).
 
-**Linux / macOS / Git Bash:**
+### Option A — Armored key directly (recommended)
+
+Gradle accepts the raw armored private key. Fewer encoding mistakes than base64.
+
+**PowerShell:**
+
+```powershell
+gpg --armor --export-secret-keys YOUR_KEY_ID
+```
+
+Copy **everything** printed, including:
+
+```
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+...
+-----END PGP PRIVATE KEY BLOCK-----
+```
+
+Paste into `SIGNING_IN_MEMORY_KEY` (GitHub allows multiline secrets).
+
+**Git Bash / Linux:**
+
+```bash
+gpg --armor --export-secret-keys YOUR_KEY_ID
+```
+
+### Option B — Base64-encoded armored key
+
+**Git Bash / Linux:**
 
 ```bash
 gpg --armor --export-secret-keys YOUR_KEY_ID | base64 -w0
@@ -24,11 +52,14 @@ gpg --armor --export-secret-keys YOUR_KEY_ID | base64 -w0
 **PowerShell:**
 
 ```powershell
-$bytes = gpg --armor --export-secret-keys YOUR_KEY_ID | Out-String
-[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($bytes))
+$keyId = "YOUR_KEY_ID"
+$armored = (gpg --armor --export-secret-keys $keyId 2>$null) -join "`n"
+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($armored.Trim()))
 ```
 
-Paste the **entire** base64 string into the `SIGNING_IN_MEMORY_KEY` secret.
+Paste the **single-line** base64 output into `SIGNING_IN_MEMORY_KEY`.
+
+Do **not** paste `signing.keyId` or `signing.password` into `SIGNING_IN_MEMORY_KEY`.
 
 ## Verify secrets (after saving)
 
@@ -56,7 +87,7 @@ This means the **Release** workflow fell back to `gpg` instead of in-memory sign
 
 1. **Secrets not configured** — `gh secret list` is empty. Add all four secrets from the table above.
 2. **`signing.useGpgCmd=true` in project `gradle.properties`** — removed from the repo; keep it only in local `~/.gradle/gradle.properties`.
-3. **Wrong key format** — `SIGNING_IN_MEMORY_KEY` must be the **base64** of your armored private key export (see export commands above).
+3. **Wrong key format** — CI error `Could not read PGP secret key` / `tag 0xffffffff` means `SIGNING_IN_MEMORY_KEY` is malformed. Re-export with **Option A** (armored key) above and update the secret. Do not paste `signing.keyId` or the passphrase here.
 
 After adding secrets, re-run the failed workflow: **Actions → Release → Re-run all jobs**, or push a new tag.
 
