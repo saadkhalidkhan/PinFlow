@@ -1,6 +1,6 @@
 package com.pinflow.compose
 
-internal enum class PinFlowCellState {
+enum class PinFlowCellState {
     Empty,
     Focused,
     Filled,
