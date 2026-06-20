@@ -23,13 +23,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Animation
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -57,7 +59,18 @@ import com.pinflow.compose.PinFlowCellState
 import com.pinflow.compose.PinFlowMode
 import com.pinflow.compose.PinFlowThemes
 import com.pinflow.compose.PinFlowValidator
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
 import com.pinflow.sample.ui.theme.PinFlowTheme
+
+private object Routes {
+    const val Demo = "demo"
+    const val AnimationShowcase = "animation_showcase"
+}
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -66,6 +79,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PinFlowTheme {
+                val navController = rememberNavController()
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                val onShowcase = currentRoute == Routes.AnimationShowcase
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
@@ -77,16 +94,46 @@ class MainActivity : ComponentActivity() {
                                 title = {
                                     Column {
                                         Text(
-                                            "PinFlow",
+                                            if (onShowcase) "Animation Showcase" else "PinFlow",
                                             style = MaterialTheme.typography.headlineLarge.copy(
                                                 fontWeight = FontWeight.Bold,
                                             ),
                                         )
                                         Text(
-                                            "Animated OTP & PIN for Compose",
+                                            if (onShowcase) {
+                                                "MVP 3 — motion & verification states"
+                                            } else {
+                                                "Animated OTP & PIN for Compose"
+                                            },
                                             style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.secondary,
                                         )
+                                    }
+                                },
+                                navigationIcon = {
+                                    if (onShowcase) {
+                                        IconButton(onClick = { navController.popBackStack() }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = "Back",
+                                            )
+                                        }
+                                    }
+                                },
+                                actions = {
+                                    if (!onShowcase) {
+                                        TextButton(
+                                            onClick = {
+                                                navController.navigate(Routes.AnimationShowcase)
+                                            },
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Animation,
+                                                contentDescription = null,
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Animations")
+                                        }
                                     }
                                 },
                                 colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -97,7 +144,18 @@ class MainActivity : ComponentActivity() {
                         },
                         contentWindowInsets = WindowInsets.systemBars,
                     ) { innerPadding ->
-                        DemoScreen(modifier = Modifier.padding(innerPadding))
+                        NavHost(
+                            navController = navController,
+                            startDestination = Routes.Demo,
+                            modifier = Modifier.padding(innerPadding),
+                        ) {
+                            composable(Routes.Demo) {
+                                DemoScreen()
+                            }
+                            composable(Routes.AnimationShowcase) {
+                                AnimationShowcaseScreen()
+                            }
+                        }
                     }
                 }
             }
