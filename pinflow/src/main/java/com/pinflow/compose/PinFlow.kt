@@ -46,7 +46,6 @@ import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -102,6 +101,9 @@ fun PinFlow(
     cellContent: PinFlowCellContent? = null,
     hapticEnabled: Boolean = false,
     onComplete: ((String) -> Unit)? = null,
+    otpAnimation: OtpAnimation? = null,
+    animationConfig: OtpAnimationConfig = OtpAnimationConfig(),
+    pulseWhenFocused: Boolean = true,
 ) {
     val effectiveColors = style?.colors ?: colors
     val effectiveDimensions = style?.dimensions ?: dimensions
@@ -176,18 +178,25 @@ fun PinFlow(
         }
     }
 
-    LaunchedEffect(isError) {
-        if (isError && PinFlowAnimation.ShakeOnError in animations) {
+    val shakeDistancePx = animationConfig.shakeDistance.value
+    val useOtpShake = otpAnimation != null &&
+        otpAnimation != OtpAnimation.None &&
+        (otpAnimation == OtpAnimation.Shake || isError)
+    val useLegacyShake = otpAnimation == null && isError && PinFlowAnimation.ShakeOnError in animations
+
+    LaunchedEffect(isError, otpAnimation) {
+        if (isError && (useOtpShake || useLegacyShake)) {
+            val distance = if (otpAnimation != null) shakeDistancePx else 10f
             repeat(4) {
                 shakeOffset.animateTo(
-                    targetValue = 10f,
+                    targetValue = distance,
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioHighBouncy,
                         stiffness = Spring.StiffnessMedium,
                     ),
                 )
                 shakeOffset.animateTo(
-                    targetValue = -10f,
+                    targetValue = -distance,
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioHighBouncy,
                         stiffness = Spring.StiffnessMedium,
@@ -248,6 +257,7 @@ fun PinFlow(
 
                     PinFlowCell(
                         char = char,
+                        cellIndex = index,
                         cellState = cellState,
                         obscureText = shouldObscure,
                         mode = slotMode,
@@ -255,6 +265,10 @@ fun PinFlow(
                         colors = effectiveColors,
                         dimensions = layoutDimensions,
                         animations = animations,
+                        otpAnimation = otpAnimation,
+                        animationConfig = animationConfig,
+                        pulseWhenFocused = pulseWhenFocused,
+                        isSuccess = isSuccess,
                         borderBrush = effectiveBorderBrush,
                         cursorColor = resolvedCursorColor,
                         cursorWidth = resolvedCursorWidth,
@@ -494,6 +508,7 @@ private fun Modifier.pinFlowCellChrome(
 @Composable
 private fun PinFlowCell(
     char: Char?,
+    cellIndex: Int,
     cellState: PinFlowCellState,
     obscureText: Boolean,
     mode: PinFlowMode,
@@ -501,6 +516,10 @@ private fun PinFlowCell(
     colors: PinFlowColors,
     dimensions: PinFlowDimensions,
     animations: Set<PinFlowAnimation>,
+    otpAnimation: OtpAnimation?,
+    animationConfig: OtpAnimationConfig,
+    pulseWhenFocused: Boolean,
+    isSuccess: Boolean,
     borderBrush: Brush?,
     cursorColor: Color,
     cursorWidth: Dp,
@@ -535,25 +554,82 @@ private fun PinFlowCell(
     )
 
     val scale = remember { Animatable(1f) }
-    LaunchedEffect(char) {
-        if (char != null && PinFlowAnimation.Bounce in animations) {
-            scale.animateTo(1.2f, tween(50, easing = LinearEasing))
-            scale.animateTo(
-                1f,
-                spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow,
-                ),
-            )
+    val bounceOffset = remember { Animatable(0f) }
+    val waveGlow = remember { Animatable(0f) }
+
+    LaunchedEffect(char, otpAnimation) {
+        when {
+            char == null || otpAnimation == OtpAnimation.None -> Unit
+            otpAnimation == OtpAnimation.Bounce -> {
+                val height = -animationConfig.bounceHeight.value
+                bounceOffset.snapTo(0f)
+                bounceOffset.animateTo(height, tween(animationConfig.durationMillis / 2))
+                bounceOffset.animateTo(
+                    0f,
+                    spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow,
+                    ),
+                )
+            }
+            otpAnimation == OtpAnimation.Scale || otpAnimation == OtpAnimation.SuccessWave -> {
+                scale.snapTo(1f)
+                scale.animateTo(
+                    animationConfig.scaleFactor,
+                    tween(animationConfig.durationMillis / 2, easing = LinearEasing),
+                )
+                scale.animateTo(
+                    1f,
+                    tween(animationConfig.durationMillis / 2, easing = LinearEasing),
+                )
+            }
+            PinFlowAnimation.Bounce in animations -> {
+                scale.animateTo(1.2f, tween(50, easing = LinearEasing))
+                scale.animateTo(
+                    1f,
+                    spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow,
+                    ),
+                )
+            }
         }
     }
 
+    LaunchedEffect(isSuccess, otpAnimation, char) {
+        if (
+            isSuccess &&
+            otpAnimation == OtpAnimation.SuccessWave &&
+            char != null
+        ) {
+            waveGlow.snapTo(0f)
+            delay(cellIndex * animationConfig.waveDelayMillis.toLong())
+            waveGlow.animateTo(1f, tween(animationConfig.durationMillis))
+            waveGlow.animateTo(0f, tween(animationConfig.durationMillis))
+        }
+    }
+
+    val showPulse = otpAnimation == OtpAnimation.Pulse &&
+        pulseWhenFocused &&
+        cellState == PinFlowCellState.Focused
+    val pulseScale = otpPulseScale(
+        enabled = showPulse,
+        durationMillis = animationConfig.durationMillis,
+    )
+
     val slideOffset = remember { Animatable(16f) }
     LaunchedEffect(char) {
-        if (char != null && PinFlowAnimation.Slide in animations) {
+        if (char != null && PinFlowAnimation.Slide in animations && otpAnimation == null) {
             slideOffset.snapTo(16f)
             slideOffset.animateTo(0f, tween(160, easing = LinearEasing))
         }
+    }
+
+    val entryScale = when {
+        showPulse -> pulseScale
+        otpAnimation != null && otpAnimation != OtpAnimation.None -> scale.value
+        PinFlowAnimation.Bounce in animations -> scale.value
+        else -> 1f
     }
 
     val shape: Shape = when (mode) {
@@ -562,19 +638,28 @@ private fun PinFlowCell(
         else -> dimensions.boxShape
     }
 
-    val glowModifier = if (
+    val waveElevation = (waveGlow.value * 12).dp
+    val glowModifier = when {
+        waveGlow.value > 0f && otpAnimation == OtpAnimation.SuccessWave -> {
+            Modifier.shadow(
+                elevation = waveElevation,
+                shape = shape,
+                ambientColor = colors.successBorderColor,
+                spotColor = colors.successBorderColor,
+            )
+        }
         cellState == PinFlowCellState.Focused &&
-        PinFlowAnimation.Glow in animations &&
-        mode != PinFlowMode.Underline
-    ) {
-        Modifier.shadow(
-            elevation = 8.dp,
-            shape = shape,
-            ambientColor = colors.glowColor,
-            spotColor = colors.glowColor,
-        )
-    } else {
-        Modifier
+            PinFlowAnimation.Glow in animations &&
+            otpAnimation == null &&
+            mode != PinFlowMode.Underline -> {
+            Modifier.shadow(
+                elevation = 8.dp,
+                shape = shape,
+                ambientColor = colors.glowColor,
+                spotColor = colors.glowColor,
+            )
+        }
+        else -> Modifier
     }
 
     Box(
@@ -586,7 +671,13 @@ private fun PinFlowCell(
                 minHeight = dimensions.cellHeight,
             )
             .graphicsLayer {
-                translationY = if (PinFlowAnimation.Slide in animations) slideOffset.value else 0f
+                translationY = when {
+                    otpAnimation == OtpAnimation.Bounce -> bounceOffset.value
+                    PinFlowAnimation.Slide in animations && otpAnimation == null -> slideOffset.value
+                    else -> 0f
+                }
+                scaleX = entryScale * (1f + waveGlow.value * (animationConfig.scaleFactor - 1f))
+                scaleY = entryScale * (1f + waveGlow.value * (animationConfig.scaleFactor - 1f))
             }
             .then(glowModifier)
             .then(
@@ -598,8 +689,7 @@ private fun PinFlowCell(
                     shape = shape,
                     underline = mode == PinFlowMode.Underline,
                 ),
-            )
-            .scale(scale.value),
+            ),
         contentAlignment = Alignment.Center,
     ) {
         if (cellContent != null) {
@@ -631,4 +721,20 @@ private fun PinFlowCell(
             }
         }
     }
+}
+
+@Composable
+private fun otpPulseScale(enabled: Boolean, durationMillis: Int): Float {
+    if (!enabled) return 1f
+    val pulseTransition = rememberInfiniteTransition(label = "otpPulse")
+    val pulseScale by pulseTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.06f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis * 2),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "pulseScale",
+    )
+    return pulseScale
 }
