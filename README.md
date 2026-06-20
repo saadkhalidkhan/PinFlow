@@ -10,7 +10,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52E3?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=android)](https://developer.android.com/jetpack/compose)
 
-**PinFlow** is a lightweight, animated, and customizable **OTP / PIN input** library for Jetpack Compose. Built with Material 3, smart paste handling, secure PIN mode, and smooth interaction states — add polished verification flows in minutes.
+**PinFlow** is a lightweight, animated, and customizable **OTP / PIN input** library for Jetpack Compose. PinFlow Compose adds smooth, customizable animations to OTP and PIN inputs, including bounce, pulse, error shake, verification progress, and success wave effects.
 
 [**Report a bug**](https://github.com/saadkhalidkhan/PinFlow/issues) · [**Contributing**](CONTRIBUTING.md) · [**Security**](SECURITY.md)
 
@@ -42,6 +42,7 @@
 | **Smart paste** | Paste `123456` and all slots fill automatically |
 | **Modes** | `Boxes`, `Underline`, `Circle`, `SingleField`, `SecurePin` |
 | **Motion** | `Bounce`, `Glow`, `ShakeOnError`, `Slide` — pick per screen |
+| **Animation engine (MVP 3)** | `OtpInput` with `OtpAnimation`, `VerificationState`, success wave, verifying progress |
 | **Secure PIN** | Masking + optional reveal-last-digit |
 | **Validation** | `PinFlowValidator` helpers + `onComplete` callback |
 | **Material 3** | `PinFlowDefaults.colors()` / `dimensions()` |
@@ -155,6 +156,29 @@ PinFlow(
     revealLastDigit = true,
 )
 ```
+
+### Animation engine (`OtpInput`)
+
+```kotlin
+import com.pinflow.compose.OtpAnimation
+import com.pinflow.compose.OtpInput
+import com.pinflow.compose.VerificationState
+
+var otp by remember { mutableStateOf("") }
+var state by remember { mutableStateOf<VerificationState>(VerificationState.Idle) }
+
+OtpInput(
+    value = otp,
+    onValueChange = { otp = it },
+    length = 6,
+    animation = OtpAnimation.SuccessWave,
+    verificationState = state,
+    animationDuration = 250,
+    enableHaptics = true,
+)
+```
+
+Set `verificationState = VerificationState.Verifying` for animated progress, `VerificationState.Error("Invalid OTP")` for shake, or `VerificationState.Success` for the success wave.
 
 ### Error shake
 

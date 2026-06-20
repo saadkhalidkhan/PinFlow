@@ -2,6 +2,16 @@
 
 All notable changes to PinFlow are documented here.
 
+## [Unreleased]
+
+### Added
+
+- **Animation engine (MVP 3)** — `OtpInput` composable with `OtpAnimation` presets (`None`, `Bounce`, `Pulse`, `Scale`, `Shake`, `SuccessWave`)
+- **`VerificationState`** — `Idle`, `Typing`, `Verifying`, `Success`, `Error(message)` for verification lifecycle feedback
+- **`OtpAnimationConfig`** — customizable duration, bounce height, scale factor, shake distance, and wave delay
+- **Verifying progress** — animated underline and dots while `VerificationState.Verifying`
+- **Sample `AnimationShowcaseScreen`** — interactive demos for all MVP 3 animations
+
 ## [1.1.1] — 2026-06-12
 
 ### Fixed
