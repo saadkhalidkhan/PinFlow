@@ -104,6 +104,7 @@ fun PinFlow(
     otpAnimation: OtpAnimation? = null,
     animationConfig: OtpAnimationConfig = OtpAnimationConfig(),
     pulseWhenFocused: Boolean = true,
+    onFocusChanged: ((Boolean) -> Unit)? = null,
 ) {
     val effectiveColors = style?.colors ?: colors
     val effectiveDimensions = style?.dimensions ?: dimensions
@@ -296,7 +297,10 @@ fun PinFlow(
                 },
                 modifier = fieldWidthModifier
                     .focusRequester(focusRequester)
-                    .onFocusChanged { isFocused = it.isFocused },
+                    .onFocusChanged {
+                        isFocused = it.isFocused
+                        onFocusChanged?.invoke(it.isFocused)
+                    },
                 textStyle = hiddenFieldTextStyle,
                 cursorBrush = SolidColor(resolvedCursorColor.copy(alpha = 0.01f)),
                 keyboardOptions = keyboardOptions,
