@@ -43,6 +43,7 @@
 | **Modes** | `Boxes`, `Underline`, `Circle`, `SingleField`, `SecurePin` |
 | **Motion** | `Bounce`, `Glow`, `ShakeOnError`, `Slide` — pick per screen |
 | **Animation engine (MVP 3)** | `OtpInput` with `OtpAnimation`, `VerificationState`, success wave, verifying progress |
+| **Autofill intelligence (MVP 4)** | SMS Retriever, clipboard suggestions, `OtpDetectionMode`, smart callbacks — no `READ_SMS` |
 | **Secure PIN** | Masking + optional reveal-last-digit |
 | **Validation** | `PinFlowValidator` helpers + `onComplete` callback |
 | **Material 3** | `PinFlowDefaults.colors()` / `dimensions()` |
@@ -81,6 +82,8 @@ dependencyResolutionManagement {
 // build.gradle.kts
 dependencies {
     implementation("io.github.saadkhalidkhan:pinflow-compose:1.1.1")
+    // Required for SMS OTP autofill (transitive via pinflow, listed for clarity)
+    implementation("com.google.android.gms:play-services-auth-api-phone:18.2.0")
 }
 ```
 
@@ -179,6 +182,66 @@ OtpInput(
 ```
 
 Set `verificationState = VerificationState.Verifying` for animated progress, `VerificationState.Error("Invalid OTP")` for shake, or `VerificationState.Success` for the success wave.
+
+### Autofill & platform intelligence (`OtpInput` MVP 4)
+
+Users rarely need to type OTPs manually — PinFlow Compose detects, suggests, and fills codes intelligently.
+
+```kotlin
+import com.pinflow.compose.OtpInput
+import com.pinflow.compose.autofill.OtpDetectionMode
+
+var otp by remember { mutableStateOf("") }
+
+OtpInput(
+    value = otp,
+    onValueChange = { otp = it },
+    length = 6,
+    smsAutoFill = true,
+    clipboardSuggestion = true,
+    otpDetectionMode = OtpDetectionMode.Suggestion,
+    onOtpDetected = { code -> println("Detected OTP: $code") },
+    onOtpFilled = { code -> println("OTP filled: $code") },
+)
+```
+
+**SMS autofill** — `smsAutoFill = true` listens via the [SMS Retriever API](https://developers.google.com/identity/sms-retriever/overview). No `READ_SMS` permission is required. Your backend SMS must include the app hash (see Google docs).
+
+**Clipboard suggestions** — `clipboardSuggestion = true` checks the clipboard when the field gains focus and when the app resumes. Matching codes show a Material 3 suggestion chip; nothing is read in the background.
+
+**Detection modes**
+
+| Mode | Behavior |
+|------|----------|
+| `OtpDetectionMode.Suggestion` (default) | Show “Code detected” chip; user taps to paste |
+| `OtpDetectionMode.AutoFill` | Insert immediately |
+| `OtpDetectionMode.Disabled` | Ignore detections |
+
+**Custom suggestion UI**
+
+```kotlin
+OtpInput(
+  // ...
+  suggestionContent = { code, source, onApply, onDismiss ->
+    // Your chip / banner
+  },
+)
+```
+
+**Gradle dependency** — SMS autofill uses Google Play Services:
+
+```kotlin
+implementation("com.google.android.gms:play-services-auth-api-phone:18.2.0")
+```
+
+This is included transitively when you depend on `pinflow-compose`. Devices without Play Services keep manual typing working; failures are silent.
+
+**Security & privacy**
+
+- No `READ_SMS` permission — only SMS Retriever broadcasts your app is eligible to receive.
+- Clipboard is read only on focus and `ON_RESUME`, not polled continuously.
+- `onOtpDetected` fires when a code is found; `onOtpFilled` fires only when the value is actually inserted (not when a suggestion is merely shown).
+- Validate OTPs on your server; client-side detection is a convenience layer only.
 
 ### Error shake
 
@@ -309,7 +372,7 @@ Generate locally:
 ./gradlew :sample:installDebug
 ```
 
-The sample demonstrates all modes, secure PIN, success/slide, single-field, and alphanumeric input.
+The sample demonstrates all modes, secure PIN, success/slide, single-field, alphanumeric input, animation showcase, and autofill showcase.
 
 ---
 
