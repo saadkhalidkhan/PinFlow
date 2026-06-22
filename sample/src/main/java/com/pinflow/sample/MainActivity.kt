@@ -26,7 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +70,7 @@ import com.pinflow.sample.ui.theme.PinFlowTheme
 private object Routes {
     const val Demo = "demo"
     const val AnimationShowcase = "animation_showcase"
+    const val AutofillShowcase = "autofill_showcase"
 }
 
 class MainActivity : ComponentActivity() {
@@ -82,6 +83,8 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val currentRoute = navController.currentBackStackEntry?.destination?.route
                 val onShowcase = currentRoute == Routes.AnimationShowcase
+                val onAutofill = currentRoute == Routes.AutofillShowcase
+                val onSubScreen = onShowcase || onAutofill
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -94,16 +97,20 @@ class MainActivity : ComponentActivity() {
                                 title = {
                                     Column {
                                         Text(
-                                            if (onShowcase) "Animation Showcase" else "PinFlow",
+                                            when {
+                                                onAutofill -> "Autofill Showcase"
+                                                onShowcase -> "Animation Showcase"
+                                                else -> "PinFlow"
+                                            },
                                             style = MaterialTheme.typography.headlineLarge.copy(
                                                 fontWeight = FontWeight.Bold,
                                             ),
                                         )
                                         Text(
-                                            if (onShowcase) {
-                                                "MVP 3 — motion & verification states"
-                                            } else {
-                                                "Animated OTP & PIN for Compose"
+                                            when {
+                                                onAutofill -> "MVP 4 — SMS & clipboard intelligence"
+                                                onShowcase -> "MVP 3 — motion & verification states"
+                                                else -> "Animated OTP & PIN for Compose"
                                             },
                                             style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.secondary,
@@ -111,7 +118,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 navigationIcon = {
-                                    if (onShowcase) {
+                                    if (onSubScreen) {
                                         IconButton(onClick = { navController.popBackStack() }) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -121,7 +128,19 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 actions = {
-                                    if (!onShowcase) {
+                                    if (!onSubScreen) {
+                                        TextButton(
+                                            onClick = {
+                                                navController.navigate(Routes.AutofillShowcase)
+                                            },
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Sms,
+                                                contentDescription = null,
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Autofill")
+                                        }
                                         TextButton(
                                             onClick = {
                                                 navController.navigate(Routes.AnimationShowcase)
@@ -154,6 +173,9 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(Routes.AnimationShowcase) {
                                 AnimationShowcaseScreen()
+                            }
+                            composable(Routes.AutofillShowcase) {
+                                AutofillShowcaseScreen()
                             }
                         }
                     }
