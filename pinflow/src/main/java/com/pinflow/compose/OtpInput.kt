@@ -29,12 +29,19 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.pinflow.compose.autofill.DefaultOtpSuggestion
+import com.pinflow.compose.autofill.OtpAllowedChars
+import com.pinflow.compose.autofill.OtpDetectionMode
+import com.pinflow.compose.autofill.OtpDetectionSource
+import com.pinflow.compose.autofill.rememberOtpAutofillBindings
 
 /**
  * Animated OTP input with verification-state feedback — the MVP 3 animation API.
  *
  * Wraps [PinFlow] with [OtpAnimation] presets, [VerificationState] handling, and a verifying
  * progress indicator. Existing [PinFlow] callers remain unchanged.
+ *
+ * MVP 4 adds SMS Retriever autofill, clipboard suggestions, and configurable detection modes.
  */
 @Composable
 fun OtpInput(
@@ -54,7 +61,36 @@ fun OtpInput(
     dimensions: PinFlowDimensions = PinFlowDefaults.dimensions(),
     enabled: Boolean = true,
     onComplete: ((String) -> Unit)? = null,
+    smsAutoFill: Boolean = false,
+    clipboardSuggestion: Boolean = false,
+    otpDetectionMode: OtpDetectionMode = OtpDetectionMode.Suggestion,
+    allowedChars: OtpAllowedChars = OtpAllowedChars.DigitsOnly,
+    onOtpDetected: (String) -> Unit = {},
+    onOtpFilled: (String) -> Unit = {},
+    suggestionContent: @Composable ((
+        code: String,
+        source: OtpDetectionSource,
+        onApply: () -> Unit,
+        onDismiss: () -> Unit,
+    ) -> Unit)? = null,
 ) {
+    val autofillEnabled = smsAutoFill || clipboardSuggestion
+    val autofillBindings = if (autofillEnabled) {
+        rememberOtpAutofillBindings(
+            length = length,
+            allowedChars = allowedChars,
+            smsAutoFill = smsAutoFill,
+            clipboardSuggestion = clipboardSuggestion,
+            otpDetectionMode = otpDetectionMode,
+            currentValue = value,
+            onValueChange = onValueChange,
+            onOtpDetected = onOtpDetected,
+            onOtpFilled = onOtpFilled,
+        )
+    } else {
+        null
+    }
+
     val resolvedConfig = animationConfig.copy(
         durationMillis = animationDuration,
         shakeDistance = shakeIntensity,
@@ -64,17 +100,36 @@ fun OtpInput(
     val isError = verificationState is VerificationState.Error
     val isSuccess = verificationState is VerificationState.Success
     val errorMessage = (verificationState as? VerificationState.Error)?.message
+    val isAlphanumeric = allowedChars is OtpAllowedChars.AlphaNumeric
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        autofillBindings?.suggestion?.let { pending ->
+            val content = suggestionContent ?: { code, source, onApply, onDismiss ->
+                DefaultOtpSuggestion(
+                    code = code,
+                    source = source,
+                    onApply = onApply,
+                    onDismiss = onDismiss,
+                )
+            }
+            content(
+                pending.code,
+                pending.source,
+                autofillBindings.applySuggestion,
+                autofillBindings.dismissSuggestion,
+            )
+        }
+
         PinFlow(
             value = value,
             onValueChange = onValueChange,
             length = length,
             mode = mode,
+            isAlphanumeric = isAlphanumeric,
             colors = colors,
             dimensions = dimensions,
             enabled = enabled,
@@ -86,6 +141,7 @@ fun OtpInput(
             pulseWhenFocused = verificationState is VerificationState.Typing ||
                 verificationState is VerificationState.Idle,
             onComplete = onComplete,
+            onFocusChanged = autofillBindings?.onFocusChanged,
         )
 
         when (verificationState) {
