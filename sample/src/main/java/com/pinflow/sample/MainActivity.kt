@@ -1,7 +1,7 @@
 package com.pinflow.sample
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -71,9 +72,10 @@ private object Routes {
     const val Demo = "demo"
     const val AnimationShowcase = "animation_showcase"
     const val AutofillShowcase = "autofill_showcase"
+    const val SecurityShowcase = "security_showcase"
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +86,8 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navController.currentBackStackEntry?.destination?.route
                 val onShowcase = currentRoute == Routes.AnimationShowcase
                 val onAutofill = currentRoute == Routes.AutofillShowcase
-                val onSubScreen = onShowcase || onAutofill
+                val onSecurity = currentRoute == Routes.SecurityShowcase
+                val onSubScreen = onShowcase || onAutofill || onSecurity
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -98,6 +101,7 @@ class MainActivity : ComponentActivity() {
                                     Column {
                                         Text(
                                             when {
+                                                onSecurity -> "Security Showcase"
                                                 onAutofill -> "Autofill Showcase"
                                                 onShowcase -> "Animation Showcase"
                                                 else -> "PinFlow"
@@ -108,6 +112,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                         Text(
                                             when {
+                                                onSecurity -> "MVP 5 — PIN creation, lock screen & biometrics"
                                                 onAutofill -> "MVP 4 — SMS & clipboard intelligence"
                                                 onShowcase -> "MVP 3 — motion & verification states"
                                                 else -> "Animated OTP & PIN for Compose"
@@ -129,6 +134,18 @@ class MainActivity : ComponentActivity() {
                                 },
                                 actions = {
                                     if (!onSubScreen) {
+                                        TextButton(
+                                            onClick = {
+                                                navController.navigate(Routes.SecurityShowcase)
+                                            },
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Lock,
+                                                contentDescription = null,
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Security")
+                                        }
                                         TextButton(
                                             onClick = {
                                                 navController.navigate(Routes.AutofillShowcase)
@@ -176,6 +193,9 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(Routes.AutofillShowcase) {
                                 AutofillShowcaseScreen()
+                            }
+                            composable(Routes.SecurityShowcase) {
+                                SecurityShowcaseScreen()
                             }
                         }
                     }
